@@ -37,7 +37,7 @@ function cvsw_admin_notices()
     <div class="error">
         <p><?php _e('<strong>Color Switcher WooCommerce requires WooCommerce to be installed and active. You can download <a href="https://woocommerce.com/" target="_blank">WooCommerce</a> here.</strong>', 'cvsw'); ?></p>
     </div>
-<?php
+    <?php
 }
 
 # WooCommerce plugin dependency
@@ -161,7 +161,8 @@ if (!class_exists('Ecaw_Core_Wc')) {
                     'name' => __('Switcher Enable', 'cvsw'),
                     'type' => 'checkbox',
                     'desc' => __('Enable "Color Variation Swatches for WooCommerce" plugin ', 'cvsw'),
-                    'id'   => 'wc_settings_tab_ecaw_color_variation'
+                    'id'   => 'wc_settings_tab_ecaw_color_variation',
+                    'default' => true, // Set the default value to true (enabled)
                 ),
                 'section_end' => array(
                     'type' => 'sectionend',
@@ -191,156 +192,156 @@ if (!function_exists('cvsw_start_plugin')) {
     }
 }
 
+$ecaw_switcher_enable = get_option('wc_settings_tab_ecaw_color_variation');
 
-add_filter('product_attributes_type_selector', 'ecaw_add_attr_type');
+if ($ecaw_switcher_enable == 'yes') {
+    add_filter('product_attributes_type_selector', 'ecaw_add_attr_type');
 
-function ecaw_add_attr_type($types)
-{
+    function ecaw_add_attr_type($types)
+    {
 
-    // let's add a color here!
-    $types['color_type'] = 'Color'; // "color_type" // is just a custom slug
-    return $types;
-}
+        // let's add a color here!
+        $types['color_type'] = 'Color'; // "color_type" // is just a custom slug
+        return $types;
+    }
 
 
-add_action('pa_color_edit_form_fields', 'ecaw_edit_fields', 10, 2);
+    add_action('pa_color_edit_form_fields', 'ecaw_edit_fields', 10, 2);
 
-function ecaw_edit_fields($term, $taxonomy)
-{
+    function ecaw_edit_fields($term, $taxonomy)
+    {
 
-    // do nothing if this term isn't the Color type
-    global $wpdb;
+        // do nothing if this term isn't the Color type
+        global $wpdb;
 
-    $attribute_type = $wpdb->get_var(
-        $wpdb->prepare(
-            "
+        $attribute_type = $wpdb->get_var(
+            $wpdb->prepare(
+                "
 			SELECT attribute_type
 			FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies
 			WHERE attribute_name = '%s'
 			",
-            substr($taxonomy, 3) // remove "pa_" prefix
-        )
-    );
+                substr($taxonomy, 3) // remove "pa_" prefix
+            )
+        );
 
-    // if it is not a color attribute, just do nothing
-    if ('color_type' !== $attribute_type) {
-        return;
+        // if it is not a color attribute, just do nothing
+        if ('color_type' !== $attribute_type) {
+            return;
+        }
+
+        // otherwise let's display our colorpicker field
+        // we can use attribute type as a meta key why not
+        $color = get_term_meta($term->term_id, 'color_type', true);
+
+    ?>
+        <tr class="form-field">
+            <th><label for="term-color_type"><?php echo esc_html__("Color", "cvsw"); ?></label></th>
+            <td><input type="text" id="term-color_type" name="color_type" class="term_color_ecaw" value="<?php echo esc_attr($color) ?>" /></td>
+        </tr>
+
+        <script>
+            jQuery(document).ready(function($) {
+                jQuery('#term-color_type').wpColorPicker();
+            });
+        </script>
+
+    <?php
+
     }
 
-    // otherwise let's display our colorpicker field
-    // we can use attribute type as a meta key why not
-    $color = get_term_meta($term->term_id, 'color_type', true);
+    add_action('edited_pa_color', 'ecaw_save_color');
+    function ecaw_save_color($term_id)
+    {
 
-?>
-    <tr class="form-field">
-        <th><label for="term-color_type"><?php echo esc_html__("Color", "cvsw"); ?></label></th>
-        <td><input type="text" id="term-color_type" name="color_type" class="term_color_ecaw" value="<?php echo esc_attr($color) ?>" /></td>
-    </tr>
+        $color_type = !empty($_POST['color_type']) ? $_POST['color_type'] : '';
+        update_term_meta($term_id, 'color_type', sanitize_hex_color($color_type));
+    }
 
-    <script>
-        jQuery(document).ready(function($) {
-            jQuery('#term-color_type').wpColorPicker();
-        });
-    </script>
 
+
+    add_action('woocommerce_product_option_terms', 'ecaw_attr_select', 10, 3);
+
+    function ecaw_attr_select($attribute_taxonomy, $i, $attribute)
+    {
+
+        // do nothing if it is not our custom attribute type
+        if ('color_type' !== $attribute_taxonomy->attribute_type) {
+            return;
+        }
+
+        // get current values
+        $options = $attribute->get_options();
+        $options = !empty($options) ? $options : array();
+
+    ?>
+        <select multiple="multiple" data-placeholder="Select color" class="multiselect attribute_values wc-enhanced-select" name="attribute_values[<?php echo $i ?>][]">
+            <?php
+            $colors = get_terms('pa_color', array('hide_empty' => 0));
+            if ($colors) {
+                foreach ($colors as $color) {
+                    echo '<option value="' . $color->term_id . '"' . wc_selected($color->term_id, $options) . '>' . $color->name . '</option>';
+                }
+            }
+            ?>
+        </select>
+        <button class="button plus select_all_attributes"><?php echo esc_html__("Select all", "cvsw"); ?></button>
+        <button class="button minus select_no_attributes"><?php echo esc_html__("Select none", "cvsw"); ?></button>
 <?php
-
-}
-
-add_action('edited_pa_color', 'ecaw_save_color');
-function ecaw_save_color($term_id)
-{
-
-    $color_type = !empty($_POST['color_type']) ? $_POST['color_type'] : '';
-    update_term_meta($term_id, 'color_type', sanitize_hex_color($color_type));
-}
-
-
-
-add_action('woocommerce_product_option_terms', 'ecaw_attr_select', 10, 3);
-
-function ecaw_attr_select($attribute_taxonomy, $i, $attribute)
-{
-
-    // do nothing if it is not our custom attribute type
-    if ('color_type' !== $attribute_taxonomy->attribute_type) {
-        return;
     }
 
-    // get current values
-    $options = $attribute->get_options();
-    $options = !empty($options) ? $options : array();
 
-?>
-    <select multiple="multiple" data-placeholder="Select color" class="multiselect attribute_values wc-enhanced-select" name="attribute_values[<?php echo $i ?>][]">
-        <?php
-        $colors = get_terms('pa_color', array('hide_empty' => 0));
-        if ($colors) {
-            foreach ($colors as $color) {
-                echo '<option value="' . $color->term_id . '"' . wc_selected($color->term_id, $options) . '>' . $color->name . '</option>';
+    add_filter('woocommerce_dropdown_variation_attribute_options_html', 'ecaw_swatches_html', 20, 2);
+
+    function ecaw_swatches_html($html, $args)
+    {
+
+        global $wpdb;
+
+        $taxonomy = $args['attribute'];
+        $product = $args['product'];
+
+        $attribute_type = $wpdb->get_var(
+            $wpdb->prepare(
+                "
+			SELECT attribute_type
+			FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies
+			WHERE attribute_name = '%s'
+			",
+                substr($taxonomy, 3) // remove "pa_" prefix
+            )
+        );
+
+        // if it is not a color attribute, just do nothing
+        if ('color_type' !== $attribute_type) {
+            return $html;
+        }
+
+        // the thing is that we do not remove original dropdown, just hide it
+        $html = '<div style="display:none">' . $html . '</div>';
+
+        // then we display the swatches
+
+        // in order to do so we loop all attributes in a taxonomy
+        $colors = wc_get_product_terms($product->get_id(), $taxonomy);
+
+        foreach ($colors as $color) {
+            if (in_array($color->slug, $args['options'])) {
+                // get the value of a color picker actually
+                $hex_color = get_term_meta($color->term_id, 'color_type', true);
+                // add class for a selected color swatch
+                $selected = $args['selected'] === $color->slug ? 'color-selected' : '';
+
+                $html .= sprintf(
+                    '<span class="swatch %s" style="background-color:%s;" title="%s" data-value="%s"></span>',
+                    $selected,
+                    $hex_color,
+                    $color->name,
+                    $color->slug
+                );
             }
         }
-        ?>
-    </select>
-    <button class="button plus select_all_attributes"><?php echo esc_html__("Select all", "cvsw"); ?></button>
-    <button class="button minus select_no_attributes"><?php echo esc_html__("Select none", "cvsw"); ?></button>
-<?php
-}
 
-
-add_filter('woocommerce_dropdown_variation_attribute_options_html', 'ecaw_swatches_html', 20, 2);
-
-function ecaw_swatches_html($html, $args)
-{
-
-    global $wpdb;
-
-    $taxonomy = $args['attribute'];
-    $product = $args['product'];
-
-    $attribute_type = $wpdb->get_var(
-        $wpdb->prepare(
-            "
-			SELECT attribute_type
-			FROM " . $wpdb->prefix . "woocommerce_attribute_taxonomies
-			WHERE attribute_name = '%s'
-			",
-            substr($taxonomy, 3) // remove "pa_" prefix
-        )
-    );
-
-    // if it is not a color attribute, just do nothing
-    if ('color_type' !== $attribute_type) {
         return $html;
     }
-
-    // the thing is that we do not remove original dropdown, just hide it
-    $html = '<div style="display:none">' . $html . '</div>';
-
-    // then we display the swatches
-
-    // in order to do so we loop all attributes in a taxonomy
-    $colors = wc_get_product_terms($product->get_id(), $taxonomy);
-
-    // echo "<pre>";
-    // print_r($colors);
-    // echo "</pre>";
-    foreach ($colors as $color) {
-        if (in_array($color->slug, $args['options'])) {
-            // get the value of a color picker actually
-            $hex_color = get_term_meta($color->term_id, 'color_type', true);
-            // add class for a selected color swatch
-            $selected = $args['selected'] === $color->slug ? 'color-selected' : '';
-
-            $html .= sprintf(
-                '<span class="swatch %s" style="background-color:%s;" title="%s" data-value="%s"></span>',
-                $selected,
-                $hex_color,
-                $color->name,
-                $color->slug
-            );
-        }
-    }
-
-    return $html;
 }
