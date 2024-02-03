@@ -76,8 +76,8 @@ function cvsw_product_addons_scripts()
 
 function cvsw_product_addon_script()
 {
-    wp_enqueue_style('ecaw-color-front-css', EAW_WOO_URL . 'assets/css/style.css', [], time());
-    wp_enqueue_script('ecaw-color-switcher-js', EAW_WOO_URL . 'assets/js/ecaw-color-switcher.js', array('jquery'), time(), true);
+    wp_enqueue_style('ecaw-color-front-css-switcher', CVSW_WOO_URL . 'assets/css/style.css', [], time());
+    wp_enqueue_script('ecaw-color-switcher-js', CVSW_WOO_URL . 'assets/js/ecaw-color-switcher.js', array('jquery'), time(), true);
     wp_enqueue_style('wp-color-picker');
     wp_enqueue_script('wp-color-picker');
 }
@@ -152,15 +152,15 @@ if (!class_exists('Ecaw_Core_Wc')) {
 
             $settings = array(
                 'section_title' => array(
-                    'name'     => __('Color Switcher Opiton', 'woocommerce-settings-tab-demo'),
+                    'name'     => __('Color Switcher Opiton', 'cvsw'),
                     'type'     => 'title',
                     'desc'     => '',
                     'id'       => 'wc_settings_tab_demo_section_title'
                 ),
                 'title' => array(
-                    'name' => __('Switcher Enable', 'woocommerce-settings-tab-demo'),
+                    'name' => __('Switcher Enable', 'cvsw'),
                     'type' => 'checkbox',
-                    'desc' => __('Enable "Color Variation Swatches for WooCommerce" plugin ', 'woocommerce-settings-tab-demo'),
+                    'desc' => __('Enable "Color Variation Swatches for WooCommerce" plugin ', 'cvsw'),
                     'id'   => 'wc_settings_tab_ecaw_color_variation'
                 ),
                 'section_end' => array(
@@ -190,86 +190,6 @@ if (!function_exists('cvsw_start_plugin')) {
         cvsw_swatches_for_wc();
     }
 }
-
-function edit_wc_attribute_ecaw_attr_color2()
-{
-    $id = isset($_GET['edit']) ? absint($_GET['edit']) : 0;
-    $input_checkbox = get_post_meta($id, 'ecaw_attr_color2', true);
-?>
-    <tr class="form-field">
-        <th scope="row" valign="top">
-            <label for="ecaw_color_field"><?php echo esc_html__("Color Enable", "textdomain"); ?></label>
-        </th>
-        <td>
-            <input type="checkbox" name="ecaw_attr_color2" id="ecaw_color_field" <?php if ($input_checkbox == 'yes') echo 'checked'; ?> />
-        </td>
-    </tr>
-<?php
-}
-
-
-add_action('woocommerce_after_add_attribute_fields', 'edit_wc_attribute_ecaw_attr_color2');
-add_action('woocommerce_after_edit_attribute_fields', 'edit_wc_attribute_ecaw_attr_color2');
-
-
-function save_wc_attribute_ecaw_attr_color2($id)
-{
-    if (is_admin() && isset($_POST['ecaw_attr_color2'])) {
-        $color_enable = isset($_POST['ecaw_attr_color2']) ? 'yes' : '';
-        update_post_meta($id, 'ecaw_attr_color2', $color_enable);
-    }
-}
-add_action('woocommerce_attribute_added', 'save_wc_attribute_ecaw_attr_color2');
-add_action('woocommerce_attribute_updated', 'save_wc_attribute_ecaw_attr_color2');
-
-add_action('woocommerce_attribute_deleted', function ($id) {
-    delete_option("wc_attribute_ecaw_attr_color2-$id");
-});
-
-
-// Display custom fields on the add/edit attribute page
-function edit_wc_attribute_ecaw_attr_color($term, $taxonomy = '')
-{
-    $id = is_object($term) ? $term->term_id : 0;
-    $color_value = get_option("wc_attribute_ecaw_attr_color_picker-$id", '');
-?>
-    <tr class="form-field">
-        <th scope="row" valign="top">
-            <label for="ecaw_color_picker"><?php echo esc_html__("Choose Color", "textdomain"); ?></label>
-        </th>
-        <td>
-            <input type="text" class="ecaw-color-picker" name="ecaw_attr_color_picker" id="ecaw_color_picker" value="<?php echo esc_attr($color_value); ?>" />
-        </td>
-    </tr>
-    <script>
-        jQuery(document).ready(function($) {
-            jQuery('.ecaw-color-picker').wpColorPicker();
-        });
-    </script>
-<?php
-}
-
-add_action('pa_color_edit_form_fields', 'edit_wc_attribute_ecaw_attr_color', 10, 2);
-add_action('pa_color_add_form_fields', 'edit_wc_attribute_ecaw_attr_color', 10, 2);
-
-// Save custom fields when adding or editing the attribute term
-function save_wc_attribute_ecaw_attr_color($term_id, $tt_id, $taxonomy)
-{
-
-    if (isset($_POST['ecaw_attr_color_picker'])) {
-        $color_value = sanitize_hex_color($_POST['ecaw_attr_color_picker']);
-        update_option("wc_attribute_ecaw_attr_color_picker-$term_id", $color_value);
-    }
-}
-
-add_action('edited_pa_color', 'save_wc_attribute_ecaw_attr_color', 10, 3);
-add_action('created_pa_color', 'save_wc_attribute_ecaw_attr_color', 10, 3);
-
-add_action('woocommerce_attribute_deleted', function ($id) {
-
-    delete_option("wc_attribute_ecaw_attr_color_picker-$id");
-});
-
 
 
 add_filter('product_attributes_type_selector', 'ecaw_add_attr_type');
@@ -313,7 +233,7 @@ function ecaw_edit_fields($term, $taxonomy)
 
 ?>
     <tr class="form-field">
-        <th><label for="term-color_type">Color</label></th>
+        <th><label for="term-color_type"><?php echo esc_html__("Color", "cvsw"); ?></label></th>
         <td><input type="text" id="term-color_type" name="color_type" class="term_color_ecaw" value="<?php echo esc_attr($color) ?>" /></td>
     </tr>
 
@@ -362,8 +282,8 @@ function ecaw_attr_select($attribute_taxonomy, $i, $attribute)
         }
         ?>
     </select>
-    <button class="button plus select_all_attributes">Select all</button>
-    <button class="button minus select_no_attributes">Select none</button>
+    <button class="button plus select_all_attributes"><?php echo esc_html__("Select all", "cvsw"); ?></button>
+    <button class="button minus select_no_attributes"><?php echo esc_html__("Select none", "cvsw"); ?></button>
 <?php
 }
 
@@ -402,6 +322,9 @@ function ecaw_swatches_html($html, $args)
     // in order to do so we loop all attributes in a taxonomy
     $colors = wc_get_product_terms($product->get_id(), $taxonomy);
 
+    // echo "<pre>";
+    // print_r($colors);
+    // echo "</pre>";
     foreach ($colors as $color) {
         if (in_array($color->slug, $args['options'])) {
             // get the value of a color picker actually
