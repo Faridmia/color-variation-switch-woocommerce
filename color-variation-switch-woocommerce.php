@@ -53,7 +53,7 @@ add_action('plugins_loaded',  'cvsw_install_woocommerce_dependency', 99);
 
 # Enqueue scripts
 
-
+add_action('admin_enqueue_scripts', 'cvsw_product_addons_scripts');
 add_action('wp_enqueue_scripts', 'cvsw_product_addon_script', 99);
 add_action('init', 'cvsw_i18n');
 
@@ -68,7 +68,11 @@ function cvsw_i18n()
     load_plugin_textdomain('cvsw', false, dirname(plugin_basename(CVSW_WOO_FILE)) . '/i18n/');
 }
 
-
+function cvsw_product_addons_scripts()
+{
+    wp_enqueue_style('wp-color-picker');
+    wp_enqueue_script('wp-color-picker');
+}
 
 function cvsw_product_addon_script()
 {
