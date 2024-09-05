@@ -1,12 +1,257 @@
-.swatch {
-	width: 30px;
-	height: 30px;
-	display: inline-block;
-	margin-right: 10px;
-	cursor:pointer;
-	border: 1px solid #fff;
-	outline: 2px solid #fff;
+.upow-swatch-wrapper {
+    display: flex;
+    gap: 10px;
 }
-.swatch.selected{
-	outline: 2px solid #333;
+
+.upow-swatch-item {
+	position: relative;
 }
+.upow-swatch-item.upow-variations-color,
+.upow-swatch-item.upow-variations-image {
+    display: inline-block;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    border: 2px solid transparent;
+    width: 30px;
+    height: 30px;
+}
+
+.upow-swatch-item.upow-variations-image {
+	width: 35px;
+	height: 35px;
+	font-size: 0;
+}
+
+.upow-swatch-item.upow-variations-image .upow-variation-tooltip {
+	font-size: 14px;
+}
+
+.upow-swatch-item.upow-variations-image img {
+	border-radius: 4px;
+}
+
+.upow-swatch-item.upow-variations-color:after,
+.upow-swatch-item.upow-variations-color:hover:after,
+.upow-swatch-item.upow-variations-image:after,
+.upow-swatch-item.upow-variations-image:hover:after,
+.upow-swatch-item.switch-logo::after,
+.upow-swatch-item.switch-logo:hover::after {
+	content: "";
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(100%);
+    height: calc(100%);
+    outline: none;
+    -webkit-backface-visibility: hidden;
+    border-radius: 4px;
+    transition: all 0.12s linear;
+    border: 2px solid #2879fe;
+    transform: translate(-50%, -50%);
+	visibility: hidden;
+	opacity: 0;
+}
+
+.upow-swatch-item.upow-variations-color.selected:after,
+.upow-swatch-item.upow-variations-color.selected:hover:after,
+.upow-swatch-item.upow-variations-image.selected:after,
+.upow-swatch-item.upow-variations-image.selected:hover:after,
+.upow-swatch-item.switch-logo.selected::after,
+.upow-swatch-item.switch-logo.selected:hover::after {
+	visibility: visible;
+	opacity: 1;
+}
+
+.upow-swatch-item.upow-variations-color.selected:before,
+.upow-swatch-item.upow-variations-color.selected:hover::before,
+.upow-swatch-item.upow-variations-image.selected:before ,
+.upow-swatch-item.upow-variations-image.selected:hover::before,
+.upow-swatch-item.switch-logo.selected::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    outline: none;
+    border-radius: 6px;
+    transition: all 0.12s linear;
+    -ms-transition: all 0.12s linear;
+    -webkit-transition: all 0.12s linear;
+    -o-transition: all 0.12s linear;
+    backface-visibility: hidden;
+}
+
+.upow-swatch-wrapper .upow-variations-label {
+	width: 100%;
+    min-width: 60px;
+    position: relative;
+    padding: 0px 5px;
+    white-space: nowrap;
+    background-color: #eaebed;
+    color: #191919;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.upow-swatch-wrapper .upow-variations-label.selected {
+	background: #4A4A4A !important;
+    color: #FFFFFF !important;
+}
+
+.upow-variation-tooltip {
+    visibility: hidden;
+    min-width: 50px;
+    background-color: rgba(0, 0, 0);
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 0 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    text-transform: capitalize;
+    font-size: 12px;
+}
+
+.woocommerce-shop .upow-variations-color .upow-variation-tooltip {
+    padding: 5px 8px;
+}
+
+.upow-variation-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%; /* Bottom of the tooltip */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+}
+
+.upow-swatch-item:hover .upow-variation-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.upow-swatch-item.color-selected {
+    border: 2px solid #000; /* Border for selected item */
+}
+
+.upow-swatch-item:active {
+    transform: scale(1.05);
+}
+
+.upow-selected-color-name {
+	font-size: 16px;
+    text-transform: lowercase;
+    font-weight: 600;
+	margin-left: 10px;
+}
+
+.upow-variation-default-wrapper {
+	display: none;
+}
+
+.woocommerce div.product form.cart .variations td, 
+.woocommerce div.product form.cart .variations th {
+    vertical-align: top!important;
+}
+
+.upow-swatch-item.switch-logo {
+    background-color: #e5e5e5;
+    padding: 0 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 28px;
+}
+
+table.variations.upow-variation-form th.label {
+    display: inline-block;
+    margin-right: 5px;
+    min-width: 15%;
+    margin-bottom: 0;
+    text-align: left;
+}
+
+table.variations.upow-variation-form td.value {
+    display: inline-block;
+    text-align: left;
+    vertical-align: top;
+    line-height: normal;
+    background: unset;
+}
+
+table.variations .upow-swatch-item {
+    position: relative;
+    transition: all 0.3s ease-in-out;
+}
+
+table.variations .upow-swatch-item.disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.4;
+    overflow: hidden;
+}
+
+table.variations .upow-swatch-item.disabled::before {
+    position: absolute;
+    content: " " !important;
+    width: 100%;
+    height: 1px;
+    background: red !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 50%;
+    visibility: visible;
+    opacity: 1;
+    border: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: auto;
+    -webkit-transform-origin: center;
+    transform-origin: center;
+    z-index: 0;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+table.variations .upow-swatch-item.disabled::after {
+    position: absolute;
+    content: " " !important;
+    width: 100%;
+    height: 1px;
+    background: red !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 50%;
+    visibility: visible;
+    opacity: 1;
+    border: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-width: auto;
+    -webkit-transform-origin: center;
+    transform-origin: center;
+    z-index: 0;
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+}
+    

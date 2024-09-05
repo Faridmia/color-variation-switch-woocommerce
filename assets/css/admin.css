@@ -1,0 +1,9 @@
+#upow-term-image-preview {
+	width: 150px;
+	height: 150px;
+    margin-bottom: 20px;
+}
+
+.upow-d-none {
+    display: none;
+}
